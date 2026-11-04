@@ -2,22 +2,29 @@ package de.germanpvp.farmlogout;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.network.chat.Component;
 
 import java.util.Locale;
 
 public final class FarmLogoutReminderClient implements ClientModInitializer {
 	private static final String TARGET_HOST = "smp.germanpvp.de";
+	private boolean targetServer;
 
 	@Override
 	public void onInitializeClient() {
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+			var server = client.getCurrentServer();
+			targetServer = server != null && isTargetServer(server.ip);
+		});
+
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-			if (handler.getServerInfo() == null || !isTargetServer(handler.getServerInfo().address)) {
+			if (!targetServer) {
 				return;
 			}
 
+			targetServer = false;
 			client.execute(() -> showReminder(client));
 		});
 	}
@@ -31,11 +38,11 @@ public final class FarmLogoutReminderClient implements ClientModInitializer {
 		return TARGET_HOST.equals(host);
 	}
 
-	private static void showReminder(MinecraftClient client) {
+	private static void showReminder(Minecraft client) {
 		client.setScreen(new ConfirmScreen(
 			confirmed -> client.setScreen(null),
-			Text.literal("Farm ausgeschaltet?"),
-			Text.literal("Hast du die Farm auf smp.germanpvp.de ausgeschaltet?")
+			Component.literal("Farm ausgeschaltet?"),
+			Component.literal("Hast du die Farm auf smp.germanpvp.de ausgeschaltet?")
 		));
 	}
 }
