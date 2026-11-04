@@ -1,6 +1,7 @@
 package de.germanpvp.farmlogout;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
@@ -12,9 +13,17 @@ import java.util.Locale;
 public final class FarmLogoutReminderClient implements ClientModInitializer {
 	private static final String TARGET_HOST = "smp.germanpvp.de";
 	private boolean targetServer;
+	private boolean reminderPending;
 
 	@Override
 	public void onInitializeClient() {
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (reminderPending) {
+				reminderPending = false;
+				showReminder(client);
+			}
+		});
+
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 			var server = client.getCurrentServer();
 			targetServer = server != null && isTargetServer(server.ip);
@@ -26,7 +35,7 @@ public final class FarmLogoutReminderClient implements ClientModInitializer {
 			}
 
 			targetServer = false;
-			client.execute(() -> showReminder(client));
+			reminderPending = true;
 		});
 	}
 
