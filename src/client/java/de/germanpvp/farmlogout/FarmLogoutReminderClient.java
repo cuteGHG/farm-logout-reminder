@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.util.Locale;
@@ -39,10 +40,18 @@ public final class FarmLogoutReminderClient implements ClientModInitializer {
 	}
 
 	private static void showReminder(Minecraft client) {
-		client.setScreen(new ConfirmScreen(
-			confirmed -> client.setScreen(null),
+		invokeSetScreen(client, new ConfirmScreen(
+			confirmed -> invokeSetScreen(client, null),
 			Component.literal("Farm ausgeschaltet?"),
 			Component.literal("Hast du die Farm auf smp.germanpvp.de ausgeschaltet?")
 		));
+	}
+
+	private static void invokeSetScreen(Minecraft client, Screen screen) {
+		try {
+			client.getClass().getMethod("setScreen", Screen.class).invoke(client, screen);
+		} catch (ReflectiveOperationException exception) {
+			throw new IllegalStateException("Minecraft screen API is unavailable", exception);
+		}
 	}
 }
