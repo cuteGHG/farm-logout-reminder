@@ -1,0 +1,23 @@
+{
+	"schemaVersion": 1,
+	"id": "farm_logout_reminder",
+	"version": "${version}",
+	"name": "Farm Logout Reminder",
+	"description": "Fragt beim Ausloggen von smp.germanpvp.de, ob die Farm ausgeschaltet wurde.",
+	"authors": [
+		"cuteGHG"
+	],
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"de.germanpvp.farmlogout.FarmLogoutReminderClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
